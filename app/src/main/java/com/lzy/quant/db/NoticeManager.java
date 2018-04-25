@@ -18,9 +18,7 @@ package com.lzy.quant.db;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.lzy.quant.bean.KLine;
-
-import java.util.List;
+import com.lzy.quant.bean.Noticed;
 
 /**
  * ================================================
@@ -31,43 +29,39 @@ import java.util.List;
  * 修订历史：
  * ================================================
  */
-public class KLineManager extends BaseDao<KLine> {
+public class NoticeManager extends BaseDao<Noticed> {
 
-    private static final KLineManager instance = new KLineManager();
+    private static final NoticeManager instance = new NoticeManager();
 
-    public static KLineManager getInstance() {
+    public static NoticeManager getInstance() {
         return instance;
     }
 
-    private KLineManager() {
+    private NoticeManager() {
         super(DBHelper.getInstance());
     }
 
     @Override
-    public KLine parseCursorToBean(Cursor cursor) {
-        return KLine.parseCursorToBean(cursor);
+    public Noticed parseCursorToBean(Cursor cursor) {
+        return Noticed.parseCursorToBean(cursor);
     }
 
     @Override
-    public ContentValues getContentValues(KLine kLine) {
-        return KLine.getContentValues(kLine);
+    public ContentValues getContentValues(Noticed noticed) {
+        return Noticed.getContentValues(noticed);
     }
 
     @Override
     public String getTableName() {
-        return DBHelper.TABLE_KLINE;
+        return DBHelper.TABLE_NOTICE;
     }
 
     @Override
     public void unInit() {
     }
 
-    public List<KLine> query(String symbol, String period, int limit) {
-        return query(null, "symbol = ? and period = ?", new String[]{symbol, period}, null, null, "id", String.valueOf(limit));
-    }
-
-    public KLine query(long id, String symbol, String period) {
-        return queryOne("id = ? and symbol = ? and period = ?", new String[]{id + "", symbol, period});
+    public Noticed query(String id, String symbol, String period) {
+        return queryOne("id = ? and symbol = ? and period = ?", new String[]{id, symbol, period});
     }
 
     /**

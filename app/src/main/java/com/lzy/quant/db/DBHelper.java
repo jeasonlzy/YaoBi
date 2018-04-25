@@ -21,6 +21,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import com.lzy.okgo.OkGo;
 import com.lzy.quant.bean.KLine;
+import com.lzy.quant.bean.MACD;
+import com.lzy.quant.bean.Noticed;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -37,13 +39,15 @@ import java.util.concurrent.locks.ReentrantLock;
 class DBHelper extends SQLiteOpenHelper {
 
     private static final String DB_CACHE_NAME = "huobi.db";
-    private static final int DB_CACHE_VERSION = 1;
+    private static final int DB_CACHE_VERSION = 3;
     static final String TABLE_KLINE = "kline";
+    static final String TABLE_NOTICE = "notice";
 
     static final Lock lock = new ReentrantLock();
     private static DBHelper dbHelper = new DBHelper();
 
     private TableEntity kLineTableEntity = new TableEntity(TABLE_KLINE);
+    private TableEntity noticeTableEntity = new TableEntity(TABLE_NOTICE);
 
     public static DBHelper getInstance() {
         return dbHelper;
@@ -66,18 +70,34 @@ class DBHelper extends SQLiteOpenHelper {
                 .addColumn(new ColumnEntity(KLine.AMOUNT, "VARCHAR"))
                 .addColumn(new ColumnEntity(KLine.COUNT, "VARCHAR"))
                 .addColumn(new ColumnEntity(KLine.VOL, "VARCHAR"))
+                .addColumn(new ColumnEntity(KLine.BUY, "VARCHAR"))
+                .addColumn(new ColumnEntity(MACD.FAST_EMA, "VARCHAR"))
+                .addColumn(new ColumnEntity(MACD.SLOW_EMA, "VARCHAR"))
+                .addColumn(new ColumnEntity(MACD.DIF, "VARCHAR"))
+                .addColumn(new ColumnEntity(MACD.DEA, "VARCHAR"))
+                .addColumn(new ColumnEntity(MACD.MACD, "VARCHAR"))
                 .unionPrimaryKey(KLine.ID, KLine.SYMBOL, KLine.PERIOD);
+
+        noticeTableEntity.addColumn(new ColumnEntity(Noticed.ID, "VARCHAR"))
+                .addColumn(new ColumnEntity(Noticed.SYMBOL, "VARCHAR"))
+                .addColumn(new ColumnEntity(Noticed.PERIOD, "VARCHAR"))
+                .addColumn(new ColumnEntity(Noticed.NOTICED, "VARCHAR"))
+                .unionPrimaryKey(Noticed.ID, Noticed.SYMBOL, Noticed.PERIOD);
+
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(kLineTableEntity.buildTableString());
+        db.execSQL(noticeTableEntity.buildTableString());
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (DBUtils.isNeedUpgradeTable(db, kLineTableEntity))
             db.execSQL("DROP TABLE IF EXISTS " + TABLE_KLINE);
+        if (DBUtils.isNeedUpgradeTable(db, noticeTableEntity))
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_NOTICE);
         onCreate(db);
     }
 

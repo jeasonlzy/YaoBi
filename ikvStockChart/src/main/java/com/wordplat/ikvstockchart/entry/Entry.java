@@ -27,6 +27,10 @@ package com.wordplat.ikvstockchart.entry;
 
 public class Entry {
 
+    public static final int NONE = 0;
+    public static final int BUY = 1;
+    public static final int SALE = 2;
+
     // 初始需全部赋值的属性
     private final float open; // 开盘价
     private final float high; // 最高价
@@ -48,6 +52,7 @@ public class Entry {
     private float dea;
     private float diff;
     private float macd;
+    private int macdBuy;
 
     // KDJ 指标的三个属性
     private float k;
@@ -67,7 +72,7 @@ public class Entry {
     /**
      * 自定义分时图用的数据
      *
-     * @param close 收盘价
+     * @param close  收盘价
      * @param volume 量
      * @param xLabel X 轴标签
      */
@@ -83,10 +88,10 @@ public class Entry {
     /**
      * 自定义 K 线图用的数据
      *
-     * @param open 开盘价
-     * @param high 最高价
-     * @param low 最低价
-     * @param close 收盘价
+     * @param open   开盘价
+     * @param high   最高价
+     * @param low    最低价
+     * @param close  收盘价
      * @param volume 量
      * @param xLabel X 轴标签
      */
@@ -263,13 +268,27 @@ public class Entry {
         this.dn = dn;
     }
 
+    public boolean isMacdBuy() {
+        return macdBuy == BUY;
+    }
+
+    public boolean isMacdSale() {
+        return macdBuy == SALE;
+    }
+
+    public void setMacdBuy(int macdBuy) {
+        this.macdBuy = macdBuy;
+    }
+
     @Override
     public String toString() {
+        String status = isMacdBuy() ? "buy" : isMacdSale() ? "sale" : "";
         return "Entry{" +
                 "open=" + open +
                 ", high=" + high +
                 ", low=" + low +
                 ", close=" + close +
+                ", " + status +
                 '}';
     }
 }

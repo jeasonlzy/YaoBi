@@ -8,9 +8,8 @@ import android.graphics.BitmapFactory;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import com.lzy.quant.bean.KLine;
 import com.lzy.quant.bean.Period;
-import com.lzy.quant.callback.QuantCallback;
+import com.lzy.quant.common.NetUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +37,14 @@ public class QuantService extends Service {
     }
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+
+        asyncData();
+        asyncByPeriod();
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         // 在API11之后构建Notification的方式
@@ -54,13 +61,8 @@ public class QuantService extends Service {
 
         Notification notification = builder.build(); // 获取构建好的Notification
         notification.defaults = Notification.DEFAULT_SOUND; //设置为默认的声音
-
         // 参数一：唯一的通知标识；参数二：通知消息。
         startForeground(110, notification);// 开始前台服务
-
-        asyncData();
-
-        asyncByPeriod();
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -70,33 +72,23 @@ public class QuantService extends Service {
      */
     private void asyncByPeriod() {
         Timer timer = new Timer();
-//        timer.schedule(new TimerTask() {
-//            @Override
-//            public void run() {
-//                for (String symbol : symbols) {
-//                    QuantUtils.getKlineData(symbol, Period.MIN_1, 10, new QuantCallback() {
-//                        @Override
-//                        public void onSuccess() {
-//                            //MACD
-//                        }
-//                    });
-//                }
-//            }
-//        }, 0, Period.MIN_1_MS);
-
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 for (String symbol : symbols) {
-                    QuantUtils.getKlineData(symbol, Period.MIN_5, 10, new QuantCallback() {
-                        @Override
-                        public void onSuccess(List<KLine> kLines) {
-                            //MACD
-                        }
-                    });
+                    NetUtils.getKlineData(symbol, Period.MIN_1, 10);
                 }
             }
-        }, 0, Period.MIN_5_MS);
+        }, 0, Period.MIN_1_MS);
+
+//        timer.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//                for (String symbol : symbols) {
+//                    NetUtils.getKlineData(symbol, Period.MIN_5, 100);
+//                }
+//            }
+//        }, 0, Period.MIN_5_MS);
     }
 
     private void asyncData() {
@@ -105,6 +97,6 @@ public class QuantService extends Service {
         periods.add(Period.MIN_5);
         periods.add(Period.MIN_15);
         periods.add(Period.MIN_30);
-        QuantUtils.asyndData(symbols, periods);
+        NetUtils.asyndData(symbols, periods);
     }
 }

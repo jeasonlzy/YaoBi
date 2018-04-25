@@ -4,7 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 
-import com.lzy.quant.common.Helper;
+import com.lzy.quant.common.Utils;
 import com.wordplat.ikvstockchart.entry.Entry;
 import com.wordplat.ikvstockchart.entry.EntrySet;
 
@@ -35,6 +35,7 @@ public class KLine implements Comparable<KLine> {
     public static final String AMOUNT = "amount";
     public static final String COUNT = "count";
     public static final String VOL = "vol";
+    public static final String BUY = "buy";
 
     public long id;         // K线id
     public String ts;       // K线时间
@@ -47,6 +48,8 @@ public class KLine implements Comparable<KLine> {
     public String amount;   // 成交量
     public String count;    // 成交笔数
     public String vol;      // 成交额, 即 sum(每一笔成交价 * 该笔的成交量)
+
+    public int buy;
 
     public MACD macd = new MACD();
 
@@ -62,6 +65,13 @@ public class KLine implements Comparable<KLine> {
         kLine.amount = cursor.getString(cursor.getColumnIndex(AMOUNT));
         kLine.count = cursor.getString(cursor.getColumnIndex(COUNT));
         kLine.vol = cursor.getString(cursor.getColumnIndex(VOL));
+        kLine.buy = cursor.getInt(cursor.getColumnIndex(BUY));
+
+        kLine.macd.fastEma = cursor.getFloat(cursor.getColumnIndex(MACD.FAST_EMA));
+        kLine.macd.slowEma = cursor.getFloat(cursor.getColumnIndex(MACD.SLOW_EMA));
+        kLine.macd.dif = cursor.getFloat(cursor.getColumnIndex(MACD.DIF));
+        kLine.macd.dea = cursor.getFloat(cursor.getColumnIndex(MACD.DEA));
+        kLine.macd.macd = cursor.getFloat(cursor.getColumnIndex(MACD.MACD));
         return kLine;
     }
 
@@ -77,15 +87,22 @@ public class KLine implements Comparable<KLine> {
         values.put(AMOUNT, kLine.amount);
         values.put(COUNT, kLine.count);
         values.put(VOL, kLine.vol);
+        values.put(BUY, kLine.buy);
+
+        values.put(MACD.FAST_EMA, kLine.macd.fastEma);
+        values.put(MACD.SLOW_EMA, kLine.macd.slowEma);
+        values.put(MACD.DIF, kLine.macd.dif);
+        values.put(MACD.DEA, kLine.macd.dea);
+        values.put(MACD.MACD, kLine.macd.macd);
         return values;
     }
 
     public static Entry toViewChart(KLine line) {
-        float open = Helper.parseFloat(line.open);
-        float high = (float) Helper.parseDouble(line.high);
-        float low = (float) Helper.parseDouble(line.low);
-        float close = (float) Helper.parseDouble(line.close);
-        int volume = (int) Helper.parseDouble(line.amount);
+        float open = Utils.parseFloat(line.open);
+        float high = (float) Utils.parseDouble(line.high);
+        float low = (float) Utils.parseDouble(line.low);
+        float close = (float) Utils.parseDouble(line.close);
+        int volume = (int) Utils.parseDouble(line.amount);
         Date date = new Date(line.id * 1000);
         String time = format.format(date);
         return new Entry(open, high, low, close, volume, time);
@@ -98,14 +115,15 @@ public class KLine implements Comparable<KLine> {
         }
         Date date = new Date();
         for (KLine line : lines) {
-            float open = (float) Helper.parseDouble(line.open);
-            float high = (float) Helper.parseDouble(line.high);
-            float low = (float) Helper.parseDouble(line.low);
-            float close = (float) Helper.parseDouble(line.close);
-            int volume = (int) Helper.parseDouble(line.amount);
+            float open = (float) Utils.parseDouble(line.open);
+            float high = (float) Utils.parseDouble(line.high);
+            float low = (float) Utils.parseDouble(line.low);
+            float close = (float) Utils.parseDouble(line.close);
+            int volume = (int) Utils.parseDouble(line.amount);
             date.setTime(line.id * 1000);
             String time = format.format(date);
-            entrySet.addEntry(new Entry(open, high, low, close, volume, time));
+            Entry entry = new Entry(open, high, low, close, volume, time);
+            entrySet.addEntry(entry);
         }
         return entrySet;
     }
@@ -125,7 +143,8 @@ public class KLine implements Comparable<KLine> {
     @Override
     public String toString() {
         return "KLine{" +
-                "id='" + id + '\'' +
+                "id=" + id +
+                ", ts='" + ts + '\'' +
                 ", symbol='" + symbol + '\'' +
                 ", period='" + period + '\'' +
                 ", open='" + open + '\'' +
@@ -135,11 +154,33 @@ public class KLine implements Comparable<KLine> {
                 ", amount='" + amount + '\'' +
                 ", count='" + count + '\'' +
                 ", vol='" + vol + '\'' +
+                ", buy=" + buy +
+                ", macd=" + macd +
                 '}';
     }
 
     @Override
     public int compareTo(@NonNull KLine o) {
         return Long.valueOf(id).compareTo(o.id);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        KLine line = (KLine) o;
+
+        if (id != line.id) return false;
+        if (symbol != null ? !symbol.equals(line.symbol) : line.symbol != null) return false;
+        return period != null ? period.equals(line.period) : line.period == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (id ^ (id >>> 32));
+        result = 31 * result + (symbol != null ? symbol.hashCode() : 0);
+        result = 31 * result + (period != null ? period.hashCode() : 0);
+        return result;
     }
 }

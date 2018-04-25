@@ -1,5 +1,6 @@
 package com.lzy.quant;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
@@ -7,9 +8,12 @@ import com.lzy.okgo.OkGo;
 import com.lzy.okgo.model.Response;
 import com.lzy.quant.bean.HuoBi;
 import com.lzy.quant.bean.KLine;
-import com.lzy.quant.bean.Period;
 import com.lzy.quant.callback.JsonCallback;
-import com.lzy.quant.common.AppUtils;
+import com.lzy.quant.common.Policy;
+import com.lzy.quant.common.QuantUtils;
+import com.lzy.quant.common.Urls;
+import com.lzy.quant.common.Utils;
+import com.lzy.quant.db.KLineManager;
 import com.wordplat.ikvstockchart.InteractiveKLineView;
 import com.wordplat.ikvstockchart.drawing.HighlightDrawing;
 import com.wordplat.ikvstockchart.drawing.KDJDrawing;
@@ -24,8 +28,10 @@ import com.wordplat.ikvstockchart.marker.XAxisTextMarkerView;
 import com.wordplat.ikvstockchart.marker.YAxisTextMarkerView;
 import com.wordplat.ikvstockchart.render.KLineRender;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.TreeSet;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -33,13 +39,25 @@ import butterknife.ButterKnife;
 public class ViewActivity extends AppCompatActivity {
 
     @BindView(R.id.kLineView)
-    InteractiveKLineView kLineView = null;
+    InteractiveKLineView kLineView;
+    private String period;
+    private String symbol;
+    private String size;
+    private int policy;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view);
         ButterKnife.bind(this);
+
+        Intent intent = getIntent();
+        period = intent.getStringExtra("period");
+        symbol = intent.getStringExtra("symbol");
+        size = intent.getStringExtra("size");
+        policy = Utils.parseInt(intent.getStringExtra("policy"));
+
+        setTitle(symbol + " " + period + " " + size + " 策略" + policy);
 
         initUI();
         loadKLineData();
@@ -50,8 +68,8 @@ public class ViewActivity extends AppCompatActivity {
         kLineView.setEnableLeftRefresh(false);
         KLineRender kLineRender = (KLineRender) kLineView.getRender();
 
-        final int paddingTop = AppUtils.dpTopx(this, 10);
-        final int stockMarkerViewHeight = AppUtils.dpTopx(this, 15);
+        final int paddingTop = Utils.dp2px(this, 10);
+        final int stockMarkerViewHeight = Utils.dp2px(this, 15);
 
         // MACD
         HighlightDrawing macdHighlightDrawing = new HighlightDrawing();
@@ -91,19 +109,37 @@ public class ViewActivity extends AppCompatActivity {
     }
 
     private void loadKLineData() {
-        final String period = Period.MIN_5;
-        final String symbol = "eosusdt";
         OkGo.<HuoBi<List<KLine>>>get(Urls.history_kline)
                 .params("symbol", symbol)
                 .params("period", period)
-                .params("size", 500)
+                .params("size", size)
                 .execute(new JsonCallback<HuoBi<List<KLine>>>() {
                     @Override
                     public void onSuccess(Response<HuoBi<List<KLine>>> response) {
-                        List<KLine> kLines = KLine.fillData(response.body().data, symbol, period);
-                        Collections.sort(kLines);
-                        EntrySet entrySet = KLine.toViewChart(kLines);
+
+                        TreeSet<KLine> set = new TreeSet<>();
+                        // 添加原有的数据库中的
+                        List<KLine> kLineList = KLineManager.getInstance().query(symbol, period, 500);
+                        set.addAll(kLineList);
+                        // 添加网络新加的（如果数据库中有，这里就添加不进去了，继续使用数据库的数据）
+                        set.addAll(response.body().data);
+
+                        ArrayList<KLine> list = new ArrayList<>(set);
+                        QuantUtils.fillData(list, symbol, period);
+                        QuantUtils.computeKLineMACD(list);
+                        Policy.policy1(list);
+
+                        EntrySet entrySet = KLine.toViewChart(list);
                         entrySet.computeStockIndex();
+                        if (policy == 1) {
+                            Policy.policy1(entrySet);
+                        } else if (policy == 2) {
+                            Policy.policy2(entrySet);
+                        } else if (policy == 3) {
+                            Policy.policy3(entrySet);
+                        } else {
+                            Policy.policy1(entrySet);
+                        }
                         kLineView.setEntrySet(entrySet);
                         kLineView.notifyDataSetChanged();
                     }

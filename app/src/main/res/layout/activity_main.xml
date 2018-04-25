@@ -6,34 +6,79 @@
     android:orientation="vertical"
     tools:context="com.lzy.quant.MainActivity">
 
-    <Button
-        android:id="@+id/min_1"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="min_1" />
+        android:layout_marginTop="20dp">
 
-    <Button
-        android:id="@+id/min_5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="min_5" />
+        <EditText
+            android:id="@+id/symbol"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="eosusdt" />
 
-    <Button
-        android:id="@+id/min_15"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="min_15" />
+        <EditText
+            android:id="@+id/size"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="500" />
 
-    <Button
-        android:id="@+id/min_30"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="min_30" />
+        <EditText
+            android:id="@+id/policy"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="1" />
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/min_60"
-        android:layout_width="wrap_content"
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="min_60" />
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/min_1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="min_1" />
+
+        <Button
+            android:id="@+id/min_5"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="min_5" />
+
+        <Button
+            android:id="@+id/min_15"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="min_15" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/min_30"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="min_30" />
+
+        <Button
+            android:id="@+id/min_60"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="min_60" />
+    </LinearLayout>
 
 </LinearLayout>

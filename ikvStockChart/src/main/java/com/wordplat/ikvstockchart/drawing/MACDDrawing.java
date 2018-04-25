@@ -19,6 +19,7 @@
 package com.wordplat.ikvstockchart.drawing;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
@@ -41,11 +42,13 @@ public class MACDDrawing implements IDrawing {
     private Paint deaPaint;
     private Paint difPaint;
     private Paint macdPaint;
+    private Paint pointPaint;
 
     private final RectF indexRect = new RectF();
     private AbstractRender render;
 
     private float candleSpace = 0.1f;
+    private float pointWidth = 10;
 
     private float[] xPointBuffer = new float[4];
     private float[] deaBuffer = new float[4];
@@ -76,6 +79,13 @@ public class MACDDrawing implements IDrawing {
         if (difPaint == null) {
             difPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             difPaint.setStyle(Paint.Style.STROKE);
+        }
+
+        if (pointPaint == null) {
+            pointPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            pointPaint.setStyle(Paint.Style.FILL);
+            pointPaint.setStrokeCap(Paint.Cap.ROUND);
+            pointPaint.setStrokeWidth(pointWidth);
         }
 
         if (macdPaint == null) {
@@ -145,6 +155,16 @@ public class MACDDrawing implements IDrawing {
         render.mapPoints(null, deaBuffer);
         render.mapPoints(null, diffBuffer);
 
+        final int count = (maxIndex - minIndex) * 4;
+
+        for (int i = 0; i < count; i = i + 4) {
+            deaBuffer[i + 0] = xPointBuffer[i + 0];
+            deaBuffer[i + 2] = xPointBuffer[i + 2];
+
+            diffBuffer[i + 0] = xPointBuffer[i + 0];
+            diffBuffer[i + 2] = xPointBuffer[i + 2];
+        }
+
         for (int i = minIndex; i < maxIndex; i++) {
             Entry entry = entrySet.getEntryList().get(i);
 
@@ -175,18 +195,19 @@ public class MACDDrawing implements IDrawing {
             canvas.drawRect(xRectBuffer[0], macdBuffer[1], xRectBuffer[2], macdBuffer[3], macdPaint);
         }
 
-        final int count = (maxIndex - minIndex) * 4;
-
-        for (int i = 0 ; i < count ; i = i + 4) {
-            deaBuffer[i + 0] = xPointBuffer[i + 0];
-            deaBuffer[i + 2] = xPointBuffer[i + 2];
-
-            diffBuffer[i + 0] = xPointBuffer[i + 0];
-            diffBuffer[i + 2] = xPointBuffer[i + 2];
-        }
-
         canvas.drawLines(deaBuffer, 0, count, deaPaint);
         canvas.drawLines(diffBuffer, 0, count, difPaint);
+
+        for (int i = minIndex; i < maxIndex; i++) {
+            Entry entry = entrySet.getEntryList().get(i);
+            if (entry.isMacdBuy()) {
+                pointPaint.setColor(Color.BLUE);
+                canvas.drawPoint(diffBuffer[(i - minIndex) * 4 + 0], diffBuffer[(i - minIndex) * 4 + 1], pointPaint);
+            } else if (entry.isMacdSale()) {
+                pointPaint.setColor(Color.RED);
+                canvas.drawPoint(diffBuffer[(i - minIndex) * 4 + 0], diffBuffer[(i - minIndex) * 4 + 1], pointPaint);
+            }
+        }
 
         canvas.restore();
     }

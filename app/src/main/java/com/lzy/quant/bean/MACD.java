@@ -10,11 +10,18 @@ package com.lzy.quant.bean;
  * ================================================
  */
 public class MACD {
-    public Double fastEma;  // 短期（例如12日）收盘价指数移动平均值（Exponential Moving Average）
-    public Double slowEma;  // 长期（例如26日）收盘价指数移动平均值（Exponential Moving Average）
-    public Double dif;      // 短期EMA和长期EMA的离差值 (Difference)
-    public Double dea;      // DIF线的M日指数平滑移动平均线(Difference Exponential Average）
-    public Double macd;     // DIF线与DEA线的差
+
+    public static final String FAST_EMA = "fastEma";
+    public static final String SLOW_EMA = "slowEma";
+    public static final String DIF = "dif";
+    public static final String DEA = "dea";
+    public static final String MACD = "macd";
+
+    public float fastEma;  // 短期（例如12日）收盘价指数移动平均值（Exponential Moving Average）
+    public float slowEma;  // 长期（例如26日）收盘价指数移动平均值（Exponential Moving Average）
+    public float dif;      // 短期EMA和长期EMA的离差值 (Difference)
+    public float dea;      // DIF线的M日指数平滑移动平均线(Difference Exponential Average）
+    public float macd;     // DIF线与DEA线的差
 
     @Override
     public String toString() {
