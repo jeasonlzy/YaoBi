@@ -20,6 +20,8 @@ import android.database.Cursor;
 
 import com.lzy.quant.bean.Noticed;
 
+import java.util.List;
+
 /**
  * ================================================
  * 作    者：jeasonlzy（廖子尧）Github地址：https://github.com/jeasonlzy
@@ -62,6 +64,10 @@ public class NoticeManager extends BaseDao<Noticed> {
 
     public Noticed query(String id, String symbol, String period) {
         return queryOne("id = ? and symbol = ? and period = ?", new String[]{id, symbol, period});
+    }
+
+    public List<Noticed> query(int offset, int limit) {
+        return query(null, null, null, null, null, "ID DESC", offset + "," + limit);
     }
 
     /**

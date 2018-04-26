@@ -39,7 +39,7 @@ import java.util.concurrent.locks.ReentrantLock;
 class DBHelper extends SQLiteOpenHelper {
 
     private static final String DB_CACHE_NAME = "huobi.db";
-    private static final int DB_CACHE_VERSION = 3;
+    private static final int DB_CACHE_VERSION = 4;
     static final String TABLE_KLINE = "kline";
     static final String TABLE_NOTICE = "notice";
 
@@ -61,6 +61,7 @@ class DBHelper extends SQLiteOpenHelper {
         super(context, DB_CACHE_NAME, null, DB_CACHE_VERSION);
 
         kLineTableEntity.addColumn(new ColumnEntity(KLine.ID, "VARCHAR"))
+                .addColumn(new ColumnEntity(KLine.TS, "VARCHAR"))
                 .addColumn(new ColumnEntity(KLine.SYMBOL, "VARCHAR"))
                 .addColumn(new ColumnEntity(KLine.PERIOD, "VARCHAR"))
                 .addColumn(new ColumnEntity(KLine.OPEN, "VARCHAR"))

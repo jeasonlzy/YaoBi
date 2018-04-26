@@ -6,9 +6,9 @@ import com.lzy.quant.bean.HuoBi;
 import com.lzy.quant.bean.KLine;
 import com.lzy.quant.bean.Noticed;
 import com.lzy.quant.callback.JsonCallback;
+import com.lzy.quant.callback.QuantCallback;
 import com.lzy.quant.db.KLineManager;
 import com.lzy.quant.db.NoticeManager;
-import com.wordplat.ikvstockchart.entry.Entry;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,7 +66,7 @@ public class NetUtils {
         }
     }
 
-    public static void getKlineData(final String symbol, final String period, final int size) {
+    public static void getKlineData(final String symbol, final String period, final int size, final QuantCallback callback) {
         if (symbol == null || period == null) {
             return;
         }
@@ -79,7 +79,7 @@ public class NetUtils {
                     public void onSuccess(Response<HuoBi<List<KLine>>> response) {
                         TreeSet<KLine> set = new TreeSet<>();
                         // 添加原有的数据库中的
-                        List<KLine> kLineList = lineManager.query(symbol, period, 500);
+                        List<KLine> kLineList = lineManager.query(symbol, period, 120);
                         set.addAll(kLineList);
                         // 添加网络新加的（如果数据库中有，这里就添加不进去了，继续使用数据库的数据）
                         set.addAll(response.body().data);
@@ -90,21 +90,19 @@ public class NetUtils {
                         Policy.policy1(list);
                         // 更新数据库
                         lineManager.replace(list);
+
                         // 增量的数据提醒最新的点
                         KLine line = QuantUtils.noticed(list);
                         Noticed notice = noticeManager.query(line.id + "", line.symbol, line.period);
                         if (notice == null || !notice.noticed) {
-                            if (line.buy == Entry.BUY) {
-                                System.out.println("提醒: " + symbol + "在" + period + "形成金叉，最低价" + line.close + ", 注意买入！");
-                            } else if (line.buy == Entry.SALE) {
-                                System.out.println("提醒: " + symbol + "在" + period + "形成死叉，最低价" + line.close + ",注意卖出！");
-                            }
                             notice = new Noticed();
                             notice.period = line.period;
                             notice.symbol = line.symbol;
                             notice.id = line.id;
                             notice.noticed = true;
                             noticeManager.replace(notice);
+
+                            callback.notify(line);
                         }
                     }
                 });

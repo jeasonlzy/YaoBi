@@ -1,6 +1,7 @@
 package com.lzy.quant.common;
 
 import android.content.Context;
+import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.text.TextUtils;
@@ -58,6 +59,15 @@ public class Utils {
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
+        }
+    }
+
+    public static void muteAudioFocus(Context context, boolean bMute) {
+        AudioManager am = (AudioManager) context.getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        if (bMute) {
+            am.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+        } else {
+            am.abandonAudioFocus(null);
         }
     }
 

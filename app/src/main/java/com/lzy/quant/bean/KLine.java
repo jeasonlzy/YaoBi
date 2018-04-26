@@ -8,10 +8,8 @@ import com.lzy.quant.common.Utils;
 import com.wordplat.ikvstockchart.entry.Entry;
 import com.wordplat.ikvstockchart.entry.EntrySet;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.io.Serializable;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * ================================================
@@ -22,10 +20,10 @@ import java.util.Locale;
  * 修订历史：
  * ================================================
  */
-public class KLine implements Comparable<KLine> {
-    private static SimpleDateFormat format = new SimpleDateFormat("MM/dd HH:mm", Locale.getDefault());
+public class KLine implements Serializable, Comparable<KLine> {
 
     public static final String ID = "id";
+    public static final String TS = "ts";
     public static final String SYMBOL = "symbol";
     public static final String PERIOD = "period";
     public static final String OPEN = "open";
@@ -56,6 +54,7 @@ public class KLine implements Comparable<KLine> {
     public static KLine parseCursorToBean(Cursor cursor) {
         KLine kLine = new KLine();
         kLine.id = cursor.getLong(cursor.getColumnIndex(ID));
+        kLine.ts = cursor.getString(cursor.getColumnIndex(TS));
         kLine.symbol = cursor.getString(cursor.getColumnIndex(SYMBOL));
         kLine.period = cursor.getString(cursor.getColumnIndex(PERIOD));
         kLine.open = cursor.getString(cursor.getColumnIndex(OPEN));
@@ -78,6 +77,7 @@ public class KLine implements Comparable<KLine> {
     public static ContentValues getContentValues(KLine kLine) {
         ContentValues values = new ContentValues();
         values.put(ID, kLine.id);
+        values.put(TS, kLine.ts);
         values.put(SYMBOL, kLine.symbol);
         values.put(PERIOD, kLine.period);
         values.put(OPEN, kLine.open);
@@ -103,9 +103,7 @@ public class KLine implements Comparable<KLine> {
         float low = (float) Utils.parseDouble(line.low);
         float close = (float) Utils.parseDouble(line.close);
         int volume = (int) Utils.parseDouble(line.amount);
-        Date date = new Date(line.id * 1000);
-        String time = format.format(date);
-        return new Entry(open, high, low, close, volume, time);
+        return new Entry(open, high, low, close, volume, line.ts);
     }
 
     public static EntrySet toViewChart(List<KLine> lines) {
@@ -113,16 +111,13 @@ public class KLine implements Comparable<KLine> {
         if (lines == null) {
             return entrySet;
         }
-        Date date = new Date();
         for (KLine line : lines) {
             float open = (float) Utils.parseDouble(line.open);
             float high = (float) Utils.parseDouble(line.high);
             float low = (float) Utils.parseDouble(line.low);
             float close = (float) Utils.parseDouble(line.close);
             int volume = (int) Utils.parseDouble(line.amount);
-            date.setTime(line.id * 1000);
-            String time = format.format(date);
-            Entry entry = new Entry(open, high, low, close, volume, time);
+            Entry entry = new Entry(open, high, low, close, volume, line.ts);
             entrySet.addEntry(entry);
         }
         return entrySet;

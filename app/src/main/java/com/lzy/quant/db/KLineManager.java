@@ -63,7 +63,7 @@ public class KLineManager extends BaseDao<KLine> {
     }
 
     public List<KLine> query(String symbol, String period, int limit) {
-        return query(null, "symbol = ? and period = ?", new String[]{symbol, period}, null, null, "id", String.valueOf(limit));
+        return query(null, "symbol = ? and period = ?", new String[]{symbol, period}, null, null, "id DESC", String.valueOf(limit));
     }
 
     public KLine query(long id, String symbol, String period) {

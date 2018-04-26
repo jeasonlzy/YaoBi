@@ -8,7 +8,9 @@ import android.graphics.BitmapFactory;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
+import com.lzy.quant.bean.KLine;
 import com.lzy.quant.bean.Period;
+import com.lzy.quant.callback.QuantCallback;
 import com.lzy.quant.common.NetUtils;
 
 import java.util.ArrayList;
@@ -75,20 +77,37 @@ public class QuantService extends Service {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                for (String symbol : symbols) {
-                    NetUtils.getKlineData(symbol, Period.MIN_1, 10);
-                }
+                request(Period.MIN_1);
             }
         }, 0, Period.MIN_1_MS);
 
-//        timer.schedule(new TimerTask() {
-//            @Override
-//            public void run() {
-//                for (String symbol : symbols) {
-//                    NetUtils.getKlineData(symbol, Period.MIN_5, 100);
-//                }
-//            }
-//        }, 0, Period.MIN_5_MS);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                request(Period.MIN_5);
+            }
+        }, 0, Period.MIN_5_MS);
+
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                request(Period.MIN_15);
+            }
+        }, 0, Period.MIN_15_MS);
+    }
+
+    private void request(String period) {
+        for (String symbol : symbols) {
+            NetUtils.getKlineData(symbol, period, 10, new QuantCallback() {
+                @Override
+                public void notify(KLine line) {
+                    Intent intent = new Intent(QuantService.this, NoticeActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK| Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                    intent.putExtra("line", line);
+                    startActivity(intent);
+                }
+            });
+        }
     }
 
     private void asyncData() {

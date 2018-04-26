@@ -5,9 +5,12 @@ import com.lzy.quant.bean.Noticed;
 import com.lzy.quant.db.NoticeManager;
 import com.wordplat.ikvstockchart.entry.Entry;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * ================================================
@@ -31,12 +34,17 @@ import java.util.List;
  */
 public class QuantUtils {
 
+    public static SimpleDateFormat format = new SimpleDateFormat("MM/dd HH:mm", Locale.getDefault());
+
     public static void fillData(Collection<KLine> data, String symbol, String period) {
         if (data != null) {
+            Date date = new Date();
             for (KLine line : data) {
                 if (line != null) {
                     line.period = period;
                     line.symbol = symbol;
+                    date.setTime(line.id * 1000);
+                    line.ts = format.format(date);
                 }
             }
         }
@@ -127,7 +135,7 @@ public class QuantUtils {
                 noticed.id = line.id;
                 noticed.period = line.period;
                 noticed.symbol = line.symbol;
-                noticed.noticed = false;
+                noticed.noticed = true;
                 data.add(noticed);
             }
         }

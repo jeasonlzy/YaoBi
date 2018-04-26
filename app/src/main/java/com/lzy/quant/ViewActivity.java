@@ -29,7 +29,6 @@ import com.wordplat.ikvstockchart.marker.YAxisTextMarkerView;
 import com.wordplat.ikvstockchart.render.KLineRender;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -40,9 +39,11 @@ public class ViewActivity extends AppCompatActivity {
 
     @BindView(R.id.kLineView)
     InteractiveKLineView kLineView;
+
     private String period;
     private String symbol;
-    private String size;
+    private int size;
+    private boolean test;
     private int policy;
 
     @Override
@@ -54,13 +55,18 @@ public class ViewActivity extends AppCompatActivity {
         Intent intent = getIntent();
         period = intent.getStringExtra("period");
         symbol = intent.getStringExtra("symbol");
-        size = intent.getStringExtra("size");
+        size = Utils.parseInt(intent.getStringExtra("size"));
+        test = intent.getBooleanExtra("test", false);
         policy = Utils.parseInt(intent.getStringExtra("policy"));
 
         setTitle(symbol + " " + period + " " + size + " 策略" + policy);
 
         initUI();
-        loadKLineData();
+        if (test) {
+            loadDBData();
+        } else {
+            loadNetData();
+        }
     }
 
     private void initUI() {
@@ -108,7 +114,17 @@ public class ViewActivity extends AppCompatActivity {
         kLineRender.addMarkerView(new XAxisTextMarkerView(stockMarkerViewHeight));
     }
 
-    private void loadKLineData() {
+    private void loadDBData() {
+        kLineView.post(new Runnable() {
+            @Override
+            public void run() {
+                List<KLine> list = KLineManager.getInstance().query(symbol, period, size);
+                showChat(list);
+            }
+        });
+    }
+
+    private void loadNetData() {
         OkGo.<HuoBi<List<KLine>>>get(Urls.history_kline)
                 .params("symbol", symbol)
                 .params("period", period)
@@ -127,22 +143,28 @@ public class ViewActivity extends AppCompatActivity {
                         ArrayList<KLine> list = new ArrayList<>(set);
                         QuantUtils.fillData(list, symbol, period);
                         QuantUtils.computeKLineMACD(list);
-                        Policy.policy1(list);
 
-                        EntrySet entrySet = KLine.toViewChart(list);
-                        entrySet.computeStockIndex();
-                        if (policy == 1) {
-                            Policy.policy1(entrySet);
-                        } else if (policy == 2) {
-                            Policy.policy2(entrySet);
-                        } else if (policy == 3) {
-                            Policy.policy3(entrySet);
-                        } else {
-                            Policy.policy1(entrySet);
-                        }
-                        kLineView.setEntrySet(entrySet);
-                        kLineView.notifyDataSetChanged();
+                        showChat(list);
                     }
                 });
+    }
+
+    private void showChat(List<KLine> list) {
+        if (list == null) {
+            return;
+        }
+        EntrySet entrySet = KLine.toViewChart(list);
+        entrySet.computeStockIndex();
+        if (policy == 1) {
+            Policy.policy1(entrySet);
+        } else if (policy == 2) {
+            Policy.policy2(entrySet);
+        } else if (policy == 3) {
+            Policy.policy3(entrySet);
+        } else {
+            Policy.policy1(entrySet);
+        }
+        kLineView.setEntrySet(entrySet);
+        kLineView.notifyDataSetChanged();
     }
 }

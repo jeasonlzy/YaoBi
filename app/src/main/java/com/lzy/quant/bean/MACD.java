@@ -1,5 +1,7 @@
 package com.lzy.quant.bean;
 
+import java.io.Serializable;
+
 /**
  * ================================================
  * 作    者：jeasonlzy（廖子尧）Github地址：https://github.com/jeasonlzy
@@ -9,7 +11,7 @@ package com.lzy.quant.bean;
  * 修订历史：
  * ================================================
  */
-public class MACD {
+public class MACD implements Serializable {
 
     public static final String FAST_EMA = "fastEma";
     public static final String SLOW_EMA = "slowEma";

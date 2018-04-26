@@ -9,7 +9,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="20dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp">
 
         <EditText
             android:id="@+id/symbol"
@@ -31,6 +33,12 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="1" />
+
+        <CheckBox
+            android:id="@+id/test"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="test" />
     </LinearLayout>
 
 
@@ -80,5 +88,24 @@
             android:layout_weight="1"
             android:text="min_60" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/notice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="200dp"
+        android:text="notice" />
+
+    <Button
+        android:id="@+id/clearNotice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="clearNotice" />
+
+    <Button
+        android:id="@+id/clearKline"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="clearKline" />
 
 </LinearLayout>
